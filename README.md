@@ -378,7 +378,9 @@ Dapper有一个完整位于[测试工程](https://github.com/StackExchange/Dappe
 [Stack Overflow](https://stackoverflow.com/)正在使用Dapper。
 
 ------------------------------------------------------------------------
-原文：
+
+######
+原文(Original Text)：
 
 Dapper - a simple object mapper for .Net
 ========================================
