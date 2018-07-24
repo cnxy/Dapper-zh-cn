@@ -123,46 +123,47 @@ Dapper的一个关键特性是性能。 以下度量标准显示了对DB执行50
 
 | 方法                                              | 执行时间 | 备注 |
 | --------------------------------------------------- | -------- | ------- |
-| Hand coded (using a `SqlDataReader`)                | 47ms     |
+| 手工编码 (使用 `SqlDataReader`)                | 47ms     |
 | Dapper `ExecuteMapperQuery`                         | 49ms     |
-| [ServiceStack.OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite) (QueryById) | 50ms |
-| [PetaPoco](https://github.com/CollaboratingPlatypus/PetaPoco) | 52ms     | [Can be faster](https://web.archive.org/web/20170921124755/http://www.toptensoftware.com/blog/posts/94-PetaPoco-More-Speed) |
+| [ServiceStack.OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite) (使用Id查询) | 50ms |
+| [PetaPoco](https://github.com/CollaboratingPlatypus/PetaPoco) | 52ms     | [可以更快](https://web.archive.org/web/20170921124755/http://www.toptensoftware.com/blog/posts/94-PetaPoco-More-Speed) |
 | BLToolkit                                           | 80ms     |
 | SubSonic CodingHorror                               | 107ms    |
 | NHibernate SQL                                      | 104ms    |
 | Linq 2 SQL `ExecuteQuery`                           | 181ms    |
 | Entity framework `ExecuteStoreQuery`                | 631ms    |
 
-### Performance of SELECT mapping over 500 iterations - dynamic serialization
+### 超过500次迭代的SELECT映射性能 - 动态序列化
 
-| Method                                                   | Duration | Remarks |
+| 方法                                                   | 执行时间 | 备注 |
 | -------------------------------------------------------- | -------- | ------- |
-| Dapper `ExecuteMapperQuery` (dynamic)                    | 48ms     |
+| Dapper `ExecuteMapperQuery` (动态)                    | 48ms     |
 | [Massive](https://github.com/FransBouma/Massive)         | 52ms     |
 | [Simple.Data](https://github.com/markrendle/Simple.Data) | 95ms     |
 
 
-### Performance of SELECT mapping over 500 iterations - typical usage
+### 超过500次迭代的SELECT映射性能 - 典型用法
 
-| Method                                | Duration | Remarks |
+| 方法                                | 执行时间 | 备注 |
 | ------------------------------------- | -------- | ------- |
-| Linq 2 SQL CompiledQuery              | 81ms     | Not super typical involves complex code |
+| Linq 2 SQL CompiledQuery              | 81ms     | 非典型的且不涉及复杂的代码 |
 | NHibernate HQL                        | 118ms    |
 | Linq 2 SQL                            | 559ms    |
 | Entity framework                      | 859ms    |
 | SubSonic ActiveRecord.SingleOrDefault | 3619ms   |
 
 
-Performance benchmarks are available [here](https://github.com/StackExchange/Dapper/tree/master/Dapper.Tests.Performance).
+性能基准测试信息 [点击这里](https://github.com/StackExchange/Dapper/tree/master/Dapper.Tests.Performance).
 
-Feel free to submit patches that include other ORMs - when running benchmarks, be sure to compile in Release and not attach a debugger (<kbd>Ctrl</kbd>+<kbd>F5</kbd>).
+可以任意提交包含其他ORM的补丁 - 运行基准测试时，请确保在Release中编译而不附加调试器
+(<kbd>Ctrl</kbd>+<kbd>F5</kbd>).
 
-Alternatively, you might prefer Frans Bouma's [RawDataAccessBencher](https://github.com/FransBouma/RawDataAccessBencher) test suite or [OrmBenchmark](https://github.com/InfoTechBridge/OrmBenchmark).
+或者，您可能更喜欢Frans Bouma的[RawDataAccessBencher](https://github.com/FransBouma/RawDataAccessBencher)或[OrmBenchmark](https://github.com/InfoTechBridge/OrmBenchmark)的测试套件。
 
-Parameterized queries
+参数化查询
 ---------------------
 
-Parameters are passed in as anonymous classes. This allow you to name your parameters easily and gives you the ability to simply cut-and-paste SQL snippets and run them in your db platform's Query analyzer.
+参数可以作为匿名类进行传递，这可以轻松地命名参数，且能够简单地剪切、粘贴SQL语句并在数据库平台的查询分析器中运行。
 
 ```csharp
 new {A = 1, B = "b"} // A will be mapped to the param @A, B to the param @B
