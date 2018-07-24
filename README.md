@@ -372,7 +372,7 @@ Dapper的简洁性意味着ORM附带的许多功能都被剥离了。Dapper担�
 
 Dapper支持哪些数据库？
 ---------------------
-Dapper没有特定于DB的实现细节，它适用于所有.NET ADO提供程序，包括[SQLite]（https://www.sqlite.org/),SQL CE，Firebird，Oracle，MySQL，PostgreSQL和SQL Server。
+Dapper没有特定于DB的实现细节，它适用于所有.NET ADO提供程序，包括[SQLite](https://www.sqlite.org/),SQL CE，Firebird，Oracle，MySQL，PostgreSQL和SQL Server。
 
 有完整的例子清单吗？
 ---------------------
