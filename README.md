@@ -155,60 +155,60 @@ Dapper的一个关键特性是性能。 以下度量标准显示了对DB执行50
 
 性能基准测试信息 [点击这里](https://github.com/StackExchange/Dapper/tree/master/Dapper.Tests.Performance).
 
-可以任意提交包含其他ORM的补丁 - 运行基准测试时，请确保在Release中编译而不附加调试器
+可以任意提交包含其他ORM的补丁 - 运行基准测试时，请确保在Release中编译，且不能附加调试器
 (<kbd>Ctrl</kbd>+<kbd>F5</kbd>).
 
-或者，您可能更喜欢Frans Bouma的[RawDataAccessBencher](https://github.com/FransBouma/RawDataAccessBencher)或[OrmBenchmark](https://github.com/InfoTechBridge/OrmBenchmark)的测试套件。
+或者，你可以使用Frans Bouma的[RawDataAccessBencher](https://github.com/FransBouma/RawDataAccessBencher)或[OrmBenchmark](https://github.com/InfoTechBridge/OrmBenchmark)测试套件作为测试工具使用。
 
 参数化查询
 ---------------------
 
-参数可以作为匿名类进行传递，这可以轻松地命名参数，且能够简单地剪切、粘贴SQL语句并在数据库平台的查询分析器中运行。
+可以匿名类型作为参数进行传递，这可以轻松地命名这些参数名称，且能够在数据库平台的查询分析器中简单地使用剪切、粘贴SQL语句并运行。
 
 ```csharp
-new {A = 1, B = "b"} // A will be mapped to the param @A, B to the param @B
+new {A = 1, B = "b"} // A映射到参数@A，B映射到参数@B
 ```
 
-List Support
+列表支持
 ------------
-Dapper allows you to pass in `IEnumerable<int>` and will automatically parameterize your query.
+Dapper允许将`IEnumerable<int>`作为传递参数，并能够自动地参数化查询
 
-For example:
+例子:
 
 ```csharp
 connection.Query<int>("select * from (select 1 as Id union all select 2 union all select 3) as X where Id in @Ids", new { Ids = new int[] { 1, 2, 3 } });
 ```
 
-Will be translated to:
+以上将被转换成：
 
 ```csharp
 select * from (select 1 as Id union all select 2 union all select 3) as X where Id in (@Ids1, @Ids2, @Ids3)" // @Ids1 = 1 , @Ids2 = 2 , @Ids2 = 3
 ```
 
-Literal replacements
+文字代替
 ------------
-Dapper supports literal replacements for bool and numeric types.
+Dapper支持布尔与数字类型的文字代替。
 
 ```csharp
 connection.Query("select * from User where UserId = {=Id}", new {Id = 1}));
 ```
 
-The literal replacement is not sent as a parameter; this allows better plans and filtered index usage but should usually be used sparingly and after testing. This feature is particularly useful when the value being injected
-is actually a fixed value (for example, a fixed "category id", "status code" or "region" that is specific to the query). For *live* data where you are considering literals, you might *also* want to consider and test provider-specific query hints like [`OPTIMIZE FOR UNKNOWN`](https://blogs.msdn.microsoft.com/sqlprogrammability/2008/11/26/optimize-for-unknown-a-little-known-sql-server-2008-feature/) with regular parameters.
+文字替换不作为参数发送; 更好的计划和过滤索引用法将被允许，但通常应谨慎在测试后使用。 当注入的值实际上是固定值（例如，特定于查询的“类别ID”，“状态代码”或“区域”）时，此功能特别有用。 当你在思考文字*live*数据时，也有可能想到*also*并测试特定于提供程序的查询提示，如带有常规参数的[`OPTIMIZE FOR UNKNOWN`](https://blogs.msdn.microsoft.com/sqlprogrammability/2008/11/26/optimize-for-unknown-a-little-known-sql-server-2008-feature/)。
 
-Buffered vs Unbuffered readers
+
+缓冲与未缓冲阅读器
 ---------------------
-Dapper's default behavior is to execute your SQL and buffer the entire reader on return. This is ideal in most cases as it minimizes shared locks in the db and cuts down on db network time.
+Dapper的默认行为是执行SQL并在返回时缓冲整个阅读器。 在大多数情况下，这是理想的，因为它最小化了数据库中的共享锁并减少了数据库网络时间。
 
-However when executing huge queries you may need to minimize memory footprint and only load objects as needed. To do so pass, `buffered: false` into the `Query` method.
+但是，在执行大量查询时，可能需要最小化内存占用并仅根据需要加载对象。 为此，将`buffered：false`传递给`Query`方法。
 
-Multi Mapping
+多重映射
 ---------------------
-Dapper allows you to map a single row to multiple objects. This is a key feature if you want to avoid extraneous querying and eager load associations.
+Dapper允许将单个行映射到多个对象。 如果想避免无关的查询和立即加载关联，这是一个很关键的特性。
 
-Example:
+例子：
 
-Consider 2 classes: `Post` and `User`
+思考这两个类: `Post` and `User`
 
 ```csharp
 class Post
@@ -226,21 +226,21 @@ class User
 }
 ```
 
-Now let us say that we want to map a query that joins both the posts and the users table. Until now if we needed to combine the result of 2 queries, we'd need a new object to express it but it makes more sense in this case to put the `User` object inside the `Post` object.
+现在我们要把posts表单与users表单进行映射查询。到目前为止，如果我们需要结合2个查询的结果，我们需要一个新的对象来表达它，但在这种情况下将`User`对象放在`Post`对象中更有意义。
 
-This is the user case for multi mapping. You tell dapper that the query returns a `Post` and a `User` object and then give it a function describing what you want to do with each of the rows containing both a `Post` and a `User` object. In our case, we want to take the user object and put it inside the post object. So we write the function:
+这是多重映射的用户案例。你告诉dapper查询返回一个`Post`和一个`User`对象，然后给它描述你想要对包含`Post`和`User`对象的每一行做什么的函数。 在我们的例子中，我们想要获取用户对象并将其放在post对象中。所以编写函数如下：
 
 ```csharp
 (post, user) => { post.Owner = user; return post; }
 ```
 
-The 3 type arguments to the `Query` method specify what objects dapper should use to deserialize the row and what is going to be returned. We're going to interpret both rows as a combination of `Post` and `User` and we're returning back a `Post` object. Hence the type declaration becomes
+`Query`方法的3个类型参数指定dapper应该使用哪些对象及返回的内容进行反序列化行。我们将把这两行解释为`Post`和`User`的组合，然后我们返回一个`Post`对象。 因此类型声明变为
 
 ```csharp
 <Post, User, Post>
 ```
 
-Everything put together, looks like this:
+所有东西都放在一起，看起来像这样：
 
 ```csharp
 var sql =
@@ -257,13 +257,13 @@ Assert.Equal("Sam", post.Owner.Name);
 Assert.Equal(99, post.Owner.Id);
 ```
 
-Dapper is able to split the returned row by making an assumption that your Id columns are named `Id` or `id`. If your primary key is different or you would like to split the row at a point other than `Id`, use the optional `splitOn` parameter.
+Dapper能够通过假设Id列被命名为“Id”或“id”来拆分返回的行。 如果主键不同或者希望将行拆分为“Id”以外的其他位置，请使用可选的`splitOn`参数。
 
-Multiple Results
+多重结果
 ---------------------
-Dapper allows you to process multiple result grids in a single query.
+Dapper允许在单个查询中处理多个结果。
 
-Example:
+例子：
 
 ```csharp
 var sql =
@@ -281,16 +281,16 @@ using (var multi = connection.QueryMultiple(sql, new {id=selectedId}))
 }
 ```
 
-Stored Procedures
+存储过程
 ---------------------
-Dapper fully supports stored procs:
+Dapper完全支持存储过程：
 
 ```csharp
 var user = cnn.Query<User>("spGetUser", new {Id = 1},
         commandType: CommandType.StoredProcedure).SingleOrDefault();
 ```
 
-If you want something more fancy, you can do:
+如果你想要更有趣的东西，你可以这样做：
 
 ```csharp
 var p = new DynamicParameters();
@@ -304,22 +304,23 @@ int b = p.Get<int>("@b");
 int c = p.Get<int>("@c");
 ```
 
-Ansi Strings and varchar
+Ansi字符串和varchar
 ---------------------
-Dapper supports varchar params, if you are executing a where clause on a varchar column using a param be sure to pass it in this way:
+Dapper支持varchar参数，如果使用param在varchar列上执行where子句，请确保以这种方式传递它：
 
 ```csharp
 Query<Thing>("select * from Thing where Name = @Name", new {Name = new DbString { Value = "abcde", IsFixedLength = true, Length = 10, IsAnsi = true });
 ```
 
-On SQL Server it is crucial to use the unicode when querying unicode and ANSI when querying non unicode.
+在SQL Server中，使用unicode编码查询unicode与ANSI编码或查询非unicode编码时，变得至关重要。
 
-Type Switching Per Row
+每行类型转换
 ---------------------
 
-Usually you'll want to treat all rows from a given table as the same data type. However, there are some circumstances where it's useful to be able to parse different rows as different data types. This is where `IDataReader.GetRowParser` comes in handy.
+通常，自己希望将给定表中的所有行视为相同的数据类型。 但是，在某些情况下，能够将不同的行解析为不同的数据类型是有用的。 这就是`IDataReader.GetRowParser`派上用场的地方。
 
-Imagine you have a database table named "Shapes" with the columns: `Id`, `Type`, and `Data`, and you want to parse its rows into `Circle`, `Square`, or `Triangle` objects based on the value of the Type column.
+
+假设有一个名为“Shapes”的数据库表，其中包含列：`Id`，`Type`和`Data`，你想要基于Type列的值将它的行解析为`Circle`，`Square`或`Triangle`对象。
 
 ```csharp
 var shapes = new List<IShape>();
@@ -358,20 +359,20 @@ using (var reader = connection.ExecuteReader("select * from Shapes"))
 }
 ```
 
-Limitations and caveats
+限制与警告
 ---------------------
-Dapper caches information about every query it runs, this allow it to materialize objects quickly and process parameters quickly. The current implementation caches this information in a `ConcurrentDictionary` object. Statements that are only used once are routinely flushed from this cache. Still, if you are generating SQL strings on the fly without using parameters it is possible you may hit memory issues.
+Dapper缓存有关它运行的每个查询的信息，这使它能够快速实现对象并快速处理参数。 当前实现将此信息缓存在`ConcurrentDictionary`对象中。仅使用一次的语句通常会从此缓存中刷新。尽管如此，如果您在不使用参数的情况下动态生成SQL字符串，则可能会遇到内存问题。
 
-Dapper's simplicity means that many feature that ORMs ship with are stripped out. It worries about the 95% scenario, and gives you the tools you need most of the time. It doesn't attempt to solve every problem.
+Dapper的简洁性意味着ORM附带的许多功能都被剥离了。Dapper担心95％的情况，并为您提供大多数时间所需的工具，并不试图解决所有问题。
 
-Will Dapper work with my DB provider?
+Dapper会与我的数据库提供者适配吗？
 ---------------------
-Dapper has no DB specific implementation details, it works across all .NET ADO providers including [SQLite](https://www.sqlite.org/), SQL CE, Firebird, Oracle, MySQL, PostgreSQL and SQL Server.
+Dapper没有特定于DB的实现细节，它适用于所有.NET ADO提供程序，包括[SQLite]（https://www.sqlite.org/),SQL CE，Firebird，Oracle，MySQL，PostgreSQL和SQL Server。
 
-Do you have a comprehensive list of examples?
+你有一个完整的例子清单吗？
 ---------------------
-Dapper has a comprehensive test suite in the [test project](https://github.com/StackExchange/Dapper/tree/master/Dapper.Tests).
+Dapper有一个完整位于[测试工程](https://github.com/StackExchange/Dapper/tree/master/Dapper.Tests)的测试套件。
 
-Who is using this?
+谁在用这个？
 ---------------------
-Dapper is in production use at [Stack Overflow](https://stackoverflow.com/).
+[Stack Overflow](https://stackoverflow.com/)正在使用Dapper。
