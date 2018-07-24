@@ -1,4 +1,4 @@
-#### 本文翻译自：https://github.com/StackExchange/Dapper
+#### 本文翻译自：[StackExchange.Dapper](https://github.com/StackExchange/Dapper)
 #### 中文教程：[dapper-tutorial-cn](https://github.com/cnxy/Dapper-zh-cn/blob/master/dapper-tutorial-cn.pdf)
 Dapper - .Net版本的简单对象映射器
 ========================================
